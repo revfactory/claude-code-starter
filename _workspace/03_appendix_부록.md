@@ -1,0 +1,554 @@
+# 부록
+
+---
+
+# 부록 A: 슬래시 커맨드 전체 레퍼런스
+
+Claude Code의 모든 빌트인 슬래시 커맨드를 카테고리별로 정리합니다. 세션 중 `/` 를 입력하면 자동완성 목록이 표시됩니다.
+
+---
+
+## A.1 컨텍스트 및 메모리 관리
+
+| 커맨드 | 문법 | 설명 |
+|--------|------|------|
+| `/context` | `/context` | 현재 컨텍스트 윈도우의 토큰 사용량을 영역별(시스템, CLAUDE.md, 스킬, MCP, 대화)로 확인합니다. |
+| `/compact` | `/compact [주제]` | 대화 이력을 요약하여 컨텍스트를 압축합니다. 주제를 지정하면 해당 내용을 중심으로 요약합니다. |
+| `/memory` | `/memory` | CLAUDE.md 파일과 자동 메모리(Auto Memory)를 확인하거나 편집합니다. |
+| `/rewind` | `/rewind` | 이전 체크포인트로 파일 상태를 되돌립니다. 대화에서 특정 시점을 선택할 수 있습니다. |
+| `/clear` | `/clear` | 현재 세션의 대화 이력을 모두 초기화합니다. 컨텍스트가 가득 찼을 때 새 주제로 전환할 때 사용합니다. |
+
+**예시: `/compact` 사용**
+
+```
+> /compact focus on authentication changes
+# → 인증 관련 변경사항을 중심으로 대화를 압축합니다
+```
+
+**예시: `/context` 출력**
+
+```
+> /context
+Context usage:
+  System prompt:    8%
+  CLAUDE.md:        5%
+  Skills/MCP:       3%
+  Conversation:    62%
+  Available:       22%
+```
+
+---
+
+## A.2 세션 및 워크플로우 관리
+
+| 커맨드 | 문법 | 설명 |
+|--------|------|------|
+| `/help` | `/help` | Claude Code의 도움말을 표시합니다. 사용 가능한 커맨드 목록과 기본 사용법을 안내합니다. |
+| `/cost` | `/cost` | 현재 세션의 토큰 사용량과 예상 비용을 확인합니다. |
+| `/doctor` | `/doctor` | 설치 상태, 인증, 네트워크 연결 등을 종합 진단합니다. 문제가 있으면 해결 방법을 제시합니다. |
+| `/debug` | `/debug` | 디버그 로그를 활성화하거나 확인합니다. 문제 해결 시 상세 정보를 제공합니다. |
+| `/resume` | `/resume [세션명]` | 이전 세션을 재개합니다. 세션명을 생략하면 가장 최근 세션을 이어갑니다. |
+| `/loop` | `/loop [프롬프트]` | 지정한 프롬프트를 주기적으로 반복 실행합니다. 모니터링이나 반복 작업에 유용합니다. |
+| `/logout` | `/logout` | 현재 인증 세션에서 로그아웃합니다. 계정 전환 시 사용합니다. |
+
+**예시: `/cost` 출력**
+
+```
+> /cost
+Session cost:
+  Input tokens:   45,230  ($0.14)
+  Output tokens:  12,840  ($0.19)
+  Total:          58,070  ($0.33)
+```
+
+---
+
+## A.3 에이전트 및 자동화
+
+| 커맨드 | 문법 | 설명 |
+|--------|------|------|
+| `/agents` | `/agents` | 사용 가능한 서브에이전트 목록을 확인하고 관리합니다. 내장 에이전트(Explore, Plan)와 커스텀 에이전트를 모두 표시합니다. |
+| `/hooks` | `/hooks` | 훅(Hook) 설정을 확인하고 편집합니다. 이벤트별 훅 상태를 보여줍니다. |
+| `/mcp` | `/mcp` | 연결된 MCP 서버 목록을 확인하고 관리합니다. 서버 추가, 제거, 상태 확인이 가능합니다. |
+
+**예시: `/agents` 사용**
+
+```
+> /agents
+Available agents:
+  Built-in:
+    - Explore (Haiku, read-only)
+    - Plan (inherited model, read-only)
+    - general-purpose (inherited model, all tools)
+  Custom:
+    - code-reviewer (.claude/agents/code-reviewer.md)
+```
+
+---
+
+## A.4 설정 및 커스터마이제이션
+
+| 커맨드 | 문법 | 설명 |
+|--------|------|------|
+| `/config` | `/config [key] [value]` | Claude Code 설정을 확인하거나 변경합니다. 인자 없이 실행하면 현재 설정을 표시합니다. |
+| `/model` | `/model [모델명]` | 사용 중인 모델을 변경합니다. 별칭(sonnet, opus, haiku) 또는 전체 모델 ID를 사용할 수 있습니다. 화살표 키로 Effort Level도 조절할 수 있습니다. |
+| `/theme` | `/theme` | 터미널 테마를 선택합니다. 여러 색상 테마 중 원하는 것을 고를 수 있습니다. |
+| `/vim` | `/vim` | Vim 키바인딩 모드를 토글합니다. 활성화하면 입력창에서 Vim 스타일 편집이 가능합니다. |
+| `/init` | `/init` | CLAUDE.md 파일 생성 마법사를 실행합니다. 프로젝트 구조를 분석하여 초기 규칙 파일을 자동 생성합니다. |
+| `/terminal-setup` | `/terminal-setup` | 터미널 환경을 최적화합니다. Shift+Enter 멀티라인 입력 등을 설정합니다. |
+
+**예시: `/model` 변경**
+
+```
+> /model opus
+# → 모델이 Opus 4.6으로 변경됩니다
+# 화살표 키(← →)로 Effort Level 조절: Low / Medium / High
+```
+
+**예시: `/init` 실행**
+
+```
+> /init
+Analyzing project structure...
+Found: package.json, tsconfig.json, src/, tests/
+Generated CLAUDE.md with:
+  - Build command: npm run build
+  - Test command: npm test
+  - Code style: TypeScript strict mode
+```
+
+---
+
+## A.5 커스텀 슬래시 커맨드
+
+빌트인 커맨드 외에도 사용자가 직접 슬래시 커맨드를 만들 수 있습니다.
+
+### 스킬 방식 (권장)
+
+```
+.claude/skills/<이름>/SKILL.md    # 프로젝트 범위
+~/.claude/skills/<이름>/SKILL.md  # 사용자 범위
+```
+
+### 커맨드 방식 (레거시)
+
+```
+.claude/commands/<이름>.md        # 프로젝트 범위
+~/.claude/commands/<이름>.md      # 사용자 범위
+```
+
+호출 방법:
+
+```
+> /deploy staging        # 스킬 호출 (인자: staging)
+> /review $ARGUMENTS     # 커맨드 호출
+```
+
+---
+
+# 부록 B: 설정 파일 레퍼런스
+
+Claude Code의 설정은 여러 계층에 걸쳐 관리됩니다. 이 부록에서는 설정 파일의 구조, 주요 필드, 환경 변수, 우선순위를 정리합니다.
+
+---
+
+## B.1 settings.json 주요 필드
+
+`settings.json`은 Claude Code의 핵심 설정 파일입니다. JSON 형식으로 작성하며, 위치에 따라 적용 범위가 달라집니다.
+
+```json
+{
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Read",
+      "Edit(/src/**/*.ts)",
+      "Bash(npm run *)",
+      "Bash(git *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Edit(/.env)",
+      "Edit(/.ssh/**)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write $CLAUDE_FILE_PATH"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/protect-files.js"
+          }
+        ]
+      }
+    ]
+  },
+  "agents": {
+    "customAgentsEnabled": true
+  }
+}
+```
+
+### 주요 필드 설명
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `permissions.defaultMode` | `string` | 기본 권한 모드. `"default"`, `"acceptEdits"`, `"plan"`, `"dontAsk"`, `"bypassPermissions"` 중 하나입니다. |
+| `permissions.allow` | `string[]` | 자동 허용할 도구(Tool)와 패턴 목록입니다. 글로브 패턴을 지원합니다. |
+| `permissions.deny` | `string[]` | 차단할 도구와 패턴 목록입니다. Allow보다 우선 적용됩니다. |
+| `hooks.<이벤트>` | `array` | 특정 이벤트에 실행할 훅 배열입니다. `matcher`로 대상을 지정합니다. |
+| `hooks.<이벤트>[].matcher` | `string` | 훅이 반응할 도구 이름 패턴입니다. 정규식을 지원합니다. |
+| `hooks.<이벤트>[].hooks` | `array` | 실행할 훅 목록입니다. `type`은 `"command"`, `"prompt"`, `"agent"`, `"http"` 중 하나입니다. |
+| `agents.customAgentsEnabled` | `boolean` | 커스텀 에이전트 사용 여부를 설정합니다. |
+
+---
+
+## B.2 .claude/ 디렉토리 구조
+
+프로젝트 루트의 `.claude/` 디렉토리는 Claude Code의 프로젝트별 설정을 담습니다.
+
+```
+프로젝트 루트/
+├── .claude/
+│   ├── CLAUDE.md              # 프로젝트 규칙 (소스 컨트롤 공유)
+│   ├── settings.json          # 프로젝트 공유 설정
+│   ├── settings.local.json    # 프로젝트 개인 설정 (gitignore)
+│   ├── rules/                 # 경로별 규칙
+│   │   ├── api-rules.md       #   paths: ["src/api/**/*.ts"]
+│   │   └── test-rules.md      #   paths: ["tests/**"]
+│   ├── skills/                # 커스텀 스킬
+│   │   ├── deploy/
+│   │   │   └── SKILL.md
+│   │   └── review/
+│   │       └── SKILL.md
+│   ├── agents/                # 커스텀 에이전트
+│   │   ├── code-reviewer.md
+│   │   └── test-writer.md
+│   ├── commands/              # 레거시 커스텀 커맨드
+│   │   └── review.md
+│   └── hooks/                 # 훅 스크립트
+│       └── protect-files.js
+├── .mcp.json                  # MCP 서버 설정 (프로젝트 공유)
+└── CLAUDE.md                  # 프로젝트 규칙 (대안 위치)
+```
+
+### 사용자 홈 디렉토리 구조
+
+```
+~/
+├── .claude/
+│   ├── CLAUDE.md              # 사용자 전역 규칙
+│   ├── settings.json          # 사용자 전역 설정
+│   ├── skills/                # 사용자 전역 스킬
+│   ├── agents/                # 사용자 전역 에이전트
+│   ├── commands/              # 사용자 전역 커맨드
+│   └── projects/              # 프로젝트별 자동 메모리
+│       └── <project-hash>/
+│           └── memory/
+│               └── MEMORY.md  # 자동 저장 메모리
+└── .claude.json               # MCP 서버 설정 (사용자/로컬)
+```
+
+---
+
+## B.3 주요 환경 변수
+
+Claude Code의 동작을 환경 변수로 제어할 수 있습니다. 셸 프로필이나 CI/CD 환경에서 설정합니다.
+
+### 모델 및 성능
+
+| 환경 변수 | 기본값 | 설명 |
+|-----------|--------|------|
+| `ANTHROPIC_MODEL` | `sonnet` | 사용할 기본 모델을 지정합니다. 별칭(sonnet, opus, haiku) 또는 전체 모델 ID를 사용합니다. |
+| `CLAUDE_CODE_EFFORT_LEVEL` | `medium` | 응답 깊이를 설정합니다. `low`, `medium`, `high` 중 하나입니다. |
+| `MAX_THINKING_TOKENS` | (자동) | Extended Thinking에 할당할 최대 토큰 수를 지정합니다. 비용 절약에 유용합니다. |
+| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | `95` | 자동 압축이 실행되는 컨텍스트 사용률(%)을 조정합니다. |
+
+### 인증 및 API
+
+| 환경 변수 | 기본값 | 설명 |
+|-----------|--------|------|
+| `ANTHROPIC_API_KEY` | (없음) | Anthropic API 키를 직접 지정합니다. Console 인증 시 사용합니다. |
+| `ANTHROPIC_BASE_URL` | (공식 URL) | API 엔드포인트 URL을 변경합니다. 프록시나 커스텀 엔드포인트 사용 시 설정합니다. |
+| `CLAUDE_CODE_USE_BEDROCK` | `0` | Amazon Bedrock 백엔드를 사용합니다. `1`로 설정하면 활성화됩니다. |
+| `CLAUDE_CODE_USE_VERTEX` | `0` | Google Vertex AI 백엔드를 사용합니다. `1`로 설정하면 활성화됩니다. |
+
+### MCP 및 도구
+
+| 환경 변수 | 기본값 | 설명 |
+|-----------|--------|------|
+| `ENABLE_TOOL_SEARCH` | (자동) | MCP 도구 검색 기능을 강제 활성화/비활성화합니다. MCP 도구가 컨텍스트의 10% 이상을 차지하면 자동 활성화됩니다. |
+| `DISABLE_MCP` | `0` | 모든 MCP 서버 연결을 비활성화합니다. |
+
+### 기타
+
+| 환경 변수 | 기본값 | 설명 |
+|-----------|--------|------|
+| `CLAUDE_CODE_GIT_COMMIT_MESSAGE_LANG` | `en` | 자동 생성 커밋 메시지의 언어를 지정합니다. (예: `ko`, `ja`) |
+| `CLAUDE_CODE_MAX_OUTPUT_TOKENS` | (자동) | 응답의 최대 출력 토큰 수를 제한합니다. |
+
+---
+
+## B.4 설정 우선순위
+
+Claude Code는 여러 계층의 설정을 병합하며, 아래 순서대로 우선순위가 적용됩니다. 위에 있을수록 우선순위가 높습니다.
+
+```
+┌─────────────────────────────────────────────┐
+│  1. CLI 플래그 (최우선)                       │
+│     claude --model opus --permission-mode plan │
+├─────────────────────────────────────────────┤
+│  2. 프로젝트 로컬 설정                        │
+│     .claude/settings.local.json              │
+├─────────────────────────────────────────────┤
+│  3. 프로젝트 공유 설정                        │
+│     .claude/settings.json                    │
+├─────────────────────────────────────────────┤
+│  4. 사용자 전역 설정                          │
+│     ~/.claude/settings.json                  │
+├─────────────────────────────────────────────┤
+│  5. 조직 정책 (최하위)                        │
+│     managed-settings.json                    │
+│     (macOS: /Library/Application Support/    │
+│      ClaudeCode/managed-settings.json)       │
+└─────────────────────────────────────────────┘
+```
+
+| 우선순위 | 설정 소스 | 파일 위치 | 용도 |
+|---------|-----------|----------|------|
+| 1 (최고) | CLI 플래그 | (명령줄 인자) | 일회성 설정 변경 |
+| 2 | 프로젝트 로컬 | `.claude/settings.local.json` | 프로젝트 내 개인 설정, `.gitignore`에 포함 |
+| 3 | 프로젝트 공유 | `.claude/settings.json` | 팀 공유 설정, 소스 컨트롤 포함 |
+| 4 | 사용자 전역 | `~/.claude/settings.json` | 모든 프로젝트에 적용되는 개인 기본값 |
+| 5 (최저) | 조직 정책 | `managed-settings.json` | 조직 관리자가 배포하는 강제 정책 |
+
+> **참고:** `permissions.deny` 규칙은 예외적으로 모든 계층에서 누적 적용됩니다. 하위 계층에서 거부한 권한은 상위 계층에서 허용할 수 없습니다.
+
+---
+
+## B.5 CLAUDE.md 로딩 계층
+
+CLAUDE.md 파일도 여러 위치에서 로드되며 모두 병합됩니다.
+
+| 범위 | 위치 | 공유 여부 | 용도 |
+|------|------|----------|------|
+| 조직 정책 | `/Library/Application Support/ClaudeCode/CLAUDE.md` (macOS) | 모든 사용자 | 조직 전체 코딩 표준 |
+| 사용자 전역 | `~/.claude/CLAUDE.md` | 개인 전체 | 개인 선호 설정 |
+| 프로젝트 | `./CLAUDE.md` 또는 `./.claude/CLAUDE.md` | 소스 컨트롤 | 프로젝트별 규칙 |
+| 경로별 규칙 | `.claude/rules/*.md` | 소스 컨트롤 | 특정 디렉토리/파일에만 적용 |
+
+---
+
+# 부록 C: 트러블슈팅 가이드
+
+Claude Code 사용 중 만날 수 있는 문제와 해결 방법을 정리합니다. 대부분의 문제는 `claude doctor` 명령으로 자동 진단할 수 있습니다.
+
+```bash
+claude doctor
+```
+
+---
+
+## C.1 설치 문제
+
+### 설치 명령이 실패하는 경우
+
+| 증상 | 원인 | 해결 방법 |
+|------|------|----------|
+| `curl: command not found` | curl이 설치되지 않음 | macOS: Xcode Command Line Tools 설치 (`xcode-select --install`), Linux: `sudo apt install curl` |
+| `Permission denied` | 설치 디렉토리 권한 부족 | `sudo` 없이 설치를 권장합니다. 홈 디렉토리에 설치되었는지 확인합니다. |
+| 네트워크 타임아웃 | 방화벽 또는 프록시 차단 | 프록시 환경 변수를 설정합니다: `export HTTPS_PROXY=http://proxy:port` |
+| `GLIBC_2.xx not found` (Linux) | OS 버전이 너무 낮음 | Ubuntu 20.04 이상, Debian 10 이상이 필요합니다. |
+
+### 설치 후 `claude` 명령을 찾을 수 없는 경우
+
+```bash
+# 경로 확인
+which claude
+
+# 셸 프로필 새로고침
+source ~/.bashrc    # Bash
+source ~/.zshrc     # Zsh
+
+# 직접 경로 추가 (필요 시)
+export PATH="$HOME/.claude/bin:$PATH"
+```
+
+### Windows 특수 문제
+
+| 증상 | 해결 방법 |
+|------|----------|
+| Git for Windows 미설치 오류 | [git-scm.com](https://git-scm.com)에서 Git for Windows를 설치합니다. |
+| PowerShell 스크립트 실행 정책 오류 | `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` 실행 후 재시도합니다. |
+| CMD에서 명령 미인식 | 새 CMD 창을 열어 PATH 반영을 확인합니다. |
+
+---
+
+## C.2 인증 문제
+
+### 로그인이 되지 않는 경우
+
+| 증상 | 원인 | 해결 방법 |
+|------|------|----------|
+| 브라우저가 열리지 않음 | 헤드리스 환경 또는 WSL | `claude auth login` 실행 후 표시되는 URL을 수동으로 브라우저에 입력합니다. |
+| 로그인 후 "인증 실패" | 토큰 만료 | `/logout` 후 다시 로그인합니다. |
+| "구독을 찾을 수 없음" | Pro/Max 구독 미활성 | [claude.ai/pricing](https://claude.ai/pricing)에서 구독 상태를 확인합니다. |
+| OAuth 리디렉트 실패 | 포트 충돌 | 다른 프로세스가 콜백 포트를 점유하고 있는지 확인합니다. |
+
+### API 키 인증 문제
+
+```bash
+# API 키 확인
+echo $ANTHROPIC_API_KEY
+
+# API 키 직접 설정
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# 키 유효성 테스트
+claude doctor
+```
+
+### 클라우드 제공자 인증
+
+| 제공자 | 필수 환경 변수 | 확인 방법 |
+|--------|---------------|----------|
+| Amazon Bedrock | `CLAUDE_CODE_USE_BEDROCK=1`, AWS 자격증명 | `aws sts get-caller-identity` |
+| Google Vertex AI | `CLAUDE_CODE_USE_VERTEX=1`, `GOOGLE_APPLICATION_CREDENTIALS` | `gcloud auth list` |
+
+---
+
+## C.3 권한 문제
+
+### 파일 접근 거부
+
+| 증상 | 원인 | 해결 방법 |
+|------|------|----------|
+| "Permission denied" 파일 읽기 실패 | 파일 시스템 권한 부족 | `ls -la <파일경로>`로 권한 확인 후 `chmod` 또는 소유자 변경합니다. |
+| 도구 실행이 차단됨 | `deny` 규칙에 해당 | `settings.json`의 `permissions.deny` 배열을 확인합니다. |
+| "이 작업은 허용되지 않습니다" | 권한 모드 제한 | `Shift+Tab`으로 권한 모드를 변경하거나, 해당 작업을 `allow`에 추가합니다. |
+| Plan 모드에서 수정 불가 | 읽기 전용 모드 | Plan 모드는 의도적으로 읽기만 가능합니다. `Shift+Tab`으로 다른 모드로 전환합니다. |
+
+### 권한 규칙 디버깅
+
+```bash
+# 현재 적용된 설정 확인
+/config
+
+# 설정 파일 직접 확인
+cat .claude/settings.json
+cat ~/.claude/settings.json
+```
+
+> **권한 평가 순서:** Deny(거부) → Ask(질문) → Allow(허용). Deny 규칙이 항상 최우선으로 적용됩니다.
+
+---
+
+## C.4 연결 및 성능 문제
+
+| 증상 | 원인 | 해결 방법 |
+|------|------|----------|
+| "네트워크 연결 실패" | 인터넷 끊김 또는 API 서버 장애 | 인터넷 연결을 확인합니다. [status.anthropic.com](https://status.anthropic.com)에서 서비스 상태를 확인합니다. |
+| 응답이 매우 느림 | 컨텍스트 윈도우 가득 참 | `/compact` 또는 `/clear`로 컨텍스트를 줄입니다. |
+| "Rate limit exceeded" | API 호출 제한 초과 | 잠시 대기 후 재시도합니다. Pro/Max 구독은 제한이 더 높습니다. |
+| MCP 서버 연결 실패 | 서버 프로세스 종료 | `/mcp`로 서버 상태를 확인하고 재시작합니다. |
+| "Context window full" | 컨텍스트 한도 도달 | `/compact`로 압축하거나 `/clear`로 초기화합니다. 대용량 작업은 `sonnet[1m]` 모델을 고려합니다. |
+
+---
+
+## C.5 흔한 에러 메시지와 해결법
+
+| 에러 메시지 | 의미 | 해결 방법 |
+|------------|------|----------|
+| `Error: Could not connect to API` | API 서버 연결 불가 | 네트워크 확인, 프록시 설정 확인, `ANTHROPIC_BASE_URL` 확인 |
+| `Error: Invalid API key` | API 키가 유효하지 않음 | `ANTHROPIC_API_KEY` 환경 변수를 올바른 키로 재설정 |
+| `Error: Model not available` | 요청한 모델 사용 불가 | 구독 플랜에서 해당 모델을 지원하는지 확인. `/model sonnet`으로 기본 모델로 변경 |
+| `Error: File not found` | 참조한 파일이 존재하지 않음 | 파일 경로를 확인합니다. `@` 자동완성을 활용합니다. |
+| `Error: Tool execution timeout` | 명령 실행이 시간 초과 | 장시간 명령은 `run_in_background` 옵션을 사용합니다. 타임아웃 값을 늘립니다. |
+| `Error: Checkpoint not found` | 복원할 체크포인트 없음 | 체크포인트는 파일 수정 시 자동 생성됩니다. 아직 수정이 없었을 수 있습니다. |
+| `Error: MCP server crashed` | MCP 서버 프로세스 비정상 종료 | `/mcp`에서 서버를 재시작하거나, 서버 로그를 확인합니다. |
+| `Error: Permission denied by policy` | 조직 정책으로 차단됨 | 조직 관리자에게 `managed-settings.json` 정책 확인을 요청합니다. |
+
+---
+
+## C.6 진단 명령어 모음
+
+문제 발생 시 다음 명령어를 순서대로 실행하여 원인을 파악합니다.
+
+```bash
+# 1. 종합 진단
+claude doctor
+
+# 2. 버전 확인
+claude --version
+
+# 3. 인증 상태 확인
+claude auth status
+
+# 4. 디버그 모드로 실행 (상세 로그)
+claude --debug
+
+# 5. 설정 파일 확인
+cat ~/.claude/settings.json
+cat .claude/settings.json
+
+# 6. MCP 서버 상태 확인 (세션 내)
+/mcp
+
+# 7. 컨텍스트 상태 확인 (세션 내)
+/context
+```
+
+---
+
+# 부록 D: 용어 사전
+
+이 도서에서 사용하는 주요 용어를 정리합니다. 한글 가나다순으로 배열하되, 영문 원어를 병기합니다.
+
+---
+
+| 용어 | 영문 | 정의 |
+|------|------|------|
+| **글로브 패턴** | Glob Pattern | 파일 경로를 매칭하는 와일드카드 패턴입니다. `*`는 모든 파일, `**`는 모든 하위 디렉토리를 의미합니다. 예: `src/**/*.ts` |
+| **도구** | Tool | Claude Code가 작업을 수행하기 위해 사용하는 내장 기능입니다. Read, Write, Edit, Bash, Grep, Glob 등이 있습니다. |
+| **매처** | Matcher | 훅(Hook)이 반응할 도구 이름을 지정하는 정규식 패턴입니다. 예: `"Edit\|Write"` |
+| **모델** | Model | Claude Code가 사용하는 AI 언어 모델입니다. Sonnet(일상 작업), Opus(복잡한 작업), Haiku(빠른 작업) 등이 있습니다. |
+| **비대화형 모드** | Non-interactive Mode | `-p` 플래그를 사용하여 사용자 입력 없이 단일 프롬프트를 실행하는 모드입니다. CI/CD 파이프라인이나 스크립트에서 사용합니다. |
+| **서브에이전트** | Subagent | 메인 Claude Code 세션에서 스폰되는 독립적인 AI 에이전트입니다. 격리된 컨텍스트에서 병렬로 작업을 수행합니다. |
+| **세션** | Session | Claude Code와의 하나의 대화 단위입니다. `/resume`으로 이전 세션을 재개할 수 있습니다. |
+| **스킬** | Skill | 재사용 가능한 도메인 특화 명령어입니다. SKILL.md 파일로 정의하며, 메인 대화 컨텍스트 내에서 실행됩니다. |
+| **슬래시 커맨드** | Slash Command | `/`로 시작하는 Claude Code 내장 명령어입니다. `/help`, `/compact`, `/model` 등이 있습니다. |
+| **에이전트** | Agent | 독립적으로 작업을 수행하는 AI 개체입니다. Claude Code 자체가 에이전트이며, 내부에 서브에이전트를 생성할 수도 있습니다. |
+| **에이전틱 루프** | Agentic Loop | Claude Code의 핵심 동작 방식입니다. 컨텍스트 수집 → 액션 수행 → 결과 검증의 3단계를 반복합니다. |
+| **에포트 레벨** | Effort Level | 모델의 응답 깊이를 조절하는 설정입니다. Low(간결), Medium(기본), High(상세) 중 선택합니다. |
+| **워크스페이스** | Workspace | Claude Code가 작업하는 프로젝트 디렉토리입니다. `claude` 명령을 실행한 위치가 워크스페이스가 됩니다. |
+| **워크트리** | Worktree | Git worktree를 활용한 격리된 작업 환경입니다. 서브에이전트가 메인 작업 디렉토리에 영향을 주지 않고 독립적으로 작업할 수 있습니다. |
+| **자동 메모리** | Auto Memory | Claude Code가 세션 중 학습한 내용을 자동으로 저장하는 시스템입니다. `~/.claude/projects/<프로젝트>/memory/`에 저장됩니다. |
+| **자동 압축** | Auto Compact | 컨텍스트 사용률이 95%에 도달하면 자동으로 대화를 요약하는 기능입니다. |
+| **체크포인트** | Checkpoint | 파일 변경 전에 자동으로 생성되는 스냅샷입니다. `Esc` 두 번 또는 `/rewind`로 복원할 수 있습니다. |
+| **컨텍스트** | Context | Claude Code가 한 번에 참조할 수 있는 정보의 총량입니다. 시스템 프롬프트, CLAUDE.md, 대화 이력, 도구 결과 등이 포함됩니다. |
+| **컨텍스트 윈도우** | Context Window | 모델이 한 번에 처리할 수 있는 토큰의 최대 크기입니다. 이 범위 내에서 모든 입력과 출력이 이루어집니다. |
+| **토큰** | Token | AI 모델이 텍스트를 처리하는 최소 단위입니다. 영어 기준 약 4글자가 1토큰이며, 한글은 글자당 약 2~3토큰입니다. 비용 계산의 기준이 됩니다. |
+| **프롬프트** | Prompt | Claude Code에 전달하는 자연어 명령이나 질문입니다. 구체적이고 명확할수록 좋은 결과를 얻을 수 있습니다. |
+| **훅** | Hook | 특정 이벤트(파일 수정, 도구 실행 등)가 발생할 때 자동으로 실행되는 스크립트입니다. settings.json에서 설정합니다. |
+| **MCP 서버** | MCP Server | Model Context Protocol을 통해 Claude Code에 외부 도구와 데이터를 연결하는 서버입니다. HTTP, SSE, Stdio 방식을 지원합니다. |
+| **CLAUDE.md** | CLAUDE.md | 프로젝트의 규칙과 컨벤션을 정의하는 마크다운 파일입니다. 매 세션마다 자동으로 로드되어 Claude Code의 동작을 안내합니다. |
+| **OAuth** | OAuth | 타사 서비스 인증에 사용하는 개방형 표준 프로토콜입니다. MCP 서버 연동 시 브라우저 기반 인증 흐름에 사용됩니다. |
+| **Plan 모드** | Plan Mode | 읽기 전용 권한 모드입니다. 파일을 수정하지 않고 코드 탐색과 계획 수립만 수행합니다. |
+| **settings.json** | settings.json | Claude Code의 설정 파일입니다. 권한 규칙, 훅, 에이전트 설정 등을 JSON 형식으로 관리합니다. |
+
+---
+
+> **부록 끝.** 본문에서 다루지 못한 세부 사항은 [Claude Code 공식 문서](https://docs.anthropic.com/en/docs/claude-code)를 참고하시기 바랍니다.
