@@ -495,42 +495,53 @@ function displaySpread() {
   preloadRange(spread, 3);
 }
 
-// ── Flip Animation ──
-function flipForward() {
-  if (isAnimating || spread >= maxSpread()) return;
-  isAnimating = true;
+// ── Flip Animation (rAF-driven for natural page turn) ──
+const FLIP_DURATION = 650; // ms
 
-  const nextSpread = spread + 1;
-  const nextPages = spreadPages(nextSpread);
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+}
 
-  // Create flip overlay
+function createFlipElements(frontSrc, backSrc, direction) {
+  // direction: 'forward' or 'back'
+  const isForward = direction === 'forward';
+  const w = isMobile ? '100%' : '50%';
+
+  // Overlay (the rotating page)
   const overlay = document.createElement('div');
   overlay.style.cssText = `
-    position:absolute; top:0; right:0; width:50%; height:100%;
-    transform-origin: left center;
+    position:absolute; top:0; width:${w}; height:100%;
+    ${isForward ? 'left:' + (isMobile ? '0' : '50%') : 'left:0'};
+    transform-origin: ${isForward ? 'left' : 'right'} center;
     transform-style: preserve-3d;
-    z-index: 30;
+    z-index: 40;
     pointer-events: none;
   `;
 
-  // Front face (current right page)
+  // Front face
   const front = document.createElement('div');
   front.style.cssText = `
     position:absolute; top:0; left:0; width:100%; height:100%;
     backface-visibility: hidden;
     background: #fff;
     overflow: hidden;
-    border-radius: 0 3px 3px 0;
   `;
-  const curPages = spreadPages(spread);
-  const frontImg = document.createElement('img');
-  const frontSrc = isMobile ? url(curPages[0]) : url(curPages[1] || curPages[0]);
-  frontImg.src = frontSrc;
-  frontImg.style.cssText = `width:100%; height:100%; object-fit:contain; background:#fff;`;
-  if (!isMobile) frontImg.style.objectPosition = 'left center';
-  front.appendChild(frontImg);
+  const fImg = document.createElement('img');
+  fImg.src = frontSrc;
+  fImg.style.cssText = `width:100%; height:100%; object-fit:contain; background:#fff;`;
+  if (!isMobile) fImg.style.objectPosition = isForward ? 'left center' : 'left center';
+  front.appendChild(fImg);
 
-  // Back face (next left page)
+  // Front shadow overlay (darkens as page flips away)
+  const frontShade = document.createElement('div');
+  frontShade.style.cssText = `
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0); pointer-events:none;
+    transition: none;
+  `;
+  front.appendChild(frontShade);
+
+  // Back face
   const back = document.createElement('div');
   back.style.cssText = `
     position:absolute; top:0; left:0; width:100%; height:100%;
@@ -538,43 +549,122 @@ function flipForward() {
     transform: rotateY(180deg);
     background: #fff;
     overflow: hidden;
-    border-radius: 3px 0 0 3px;
   `;
-  const backImg = document.createElement('img');
-  backImg.src = url(nextPages[0]);
-  backImg.style.cssText = `width:100%; height:100%; object-fit:contain; background:#fff;`;
-  if (!isMobile) backImg.style.objectPosition = 'right center';
-  back.appendChild(backImg);
+  const bImg = document.createElement('img');
+  bImg.src = backSrc;
+  bImg.style.cssText = `width:100%; height:100%; object-fit:contain; background:#fff;`;
+  if (!isMobile) bImg.style.objectPosition = isForward ? 'right center' : 'right center';
+  back.appendChild(bImg);
+
+  // Back highlight (slight shine as page reveals)
+  const backShine = document.createElement('div');
+  backShine.style.cssText = `
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    background: linear-gradient(${isForward ? 'to right' : 'to left'},
+      rgba(255,255,255,0.15), transparent 40%);
+    opacity: 0; pointer-events:none;
+  `;
+  back.appendChild(backShine);
 
   overlay.appendChild(front);
   overlay.appendChild(back);
 
-  if (isMobile) {
-    overlay.style.left = '0';
-    overlay.style.right = '';
-    overlay.style.width = '100%';
-    overlay.style.transformOrigin = 'left center';
+  // Underneath page (revealed as flip progresses)
+  const under = document.createElement('div');
+  under.style.cssText = `
+    position:absolute; top:0; width:${w}; height:100%;
+    ${isForward ? 'left:' + (isMobile ? '0' : '50%') : 'left:0'};
+    z-index: 35;
+    pointer-events: none;
+    overflow: hidden;
+    background: #fff;
+  `;
+
+  // Drop shadow on the spine side of the flipping page
+  const dropShadow = document.createElement('div');
+  dropShadow.style.cssText = `
+    position:absolute; top:0; height:100%; width:30px;
+    ${isForward ? 'left:0' : 'right:0'};
+    background: linear-gradient(${isForward ? 'to right' : 'to left'},
+      rgba(0,0,0,0.15), transparent);
+    opacity: 0; z-index: 42; pointer-events:none;
+  `;
+
+  return { overlay, front, back, frontShade, backShine, under, dropShadow };
+}
+
+function animateFlip(els, direction, onComplete) {
+  const isForward = direction === 'forward';
+  const startAngle = isForward ? 0 : -180;
+  const endAngle = isForward ? -180 : 0;
+  const startTime = performance.now();
+
+  function frame(now) {
+    const elapsed = now - startTime;
+    const rawT = Math.min(elapsed / FLIP_DURATION, 1);
+    const t = easeInOutCubic(rawT);
+    const angle = startAngle + (endAngle - startAngle) * t;
+
+    // Rotate the page
+    els.overlay.style.transform = `rotateY(${angle}deg)`;
+
+    // Dynamic shadow intensity — peaks at 90 degrees
+    const openness = Math.abs(Math.abs(angle) - 90) / 90; // 0 at 90°, 1 at 0°/180°
+    const shadowIntensity = (1 - openness) * 0.25;
+    els.dropShadow.style.opacity = shadowIntensity;
+
+    // Front face darkens as it rotates away
+    const frontDark = isForward ? t * 0.08 : (1-t) * 0.08;
+    els.frontShade.style.background = `rgba(0,0,0,${frontDark})`;
+
+    // Back shine peaks mid-flip
+    els.backShine.style.opacity = shadowIntensity * 0.6;
+
+    if (rawT < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      onComplete();
+    }
   }
+  requestAnimationFrame(frame);
+}
 
-  flipInner.appendChild(overlay);
+function flipForward() {
+  if (isAnimating || spread >= maxSpread()) return;
+  isAnimating = true;
 
-  // Shadow
-  document.getElementById('shadowRight').style.opacity = '1';
+  const nextSpread = spread + 1;
+  const curPages = spreadPages(spread);
+  const nextPages = spreadPages(nextSpread);
 
-  // Trigger animation
-  requestAnimationFrame(() => {
-    overlay.style.transition = 'transform 0.55s cubic-bezier(0.4, 0.0, 0.2, 1)';
-    overlay.style.transform = 'rotateY(-180deg)';
-    overlay.style.boxShadow = '-4px 0 15px rgba(0,0,0,0.2)';
-  });
+  const frontSrc = isMobile ? url(curPages[0]) : url(curPages[1] || curPages[0]);
+  const backSrc = url(nextPages[0]);
 
-  setTimeout(() => {
+  const els = createFlipElements(frontSrc, backSrc, 'forward');
+
+  // Set up the underneath page (next right page or next page in mobile)
+  const underImg = document.createElement('img');
+  if (isMobile) {
+    underImg.src = url(nextPages[0]);
+  } else {
+    underImg.src = nextPages[1] ? url(nextPages[1]) : '';
+    underImg.style.objectPosition = 'left center';
+  }
+  underImg.style.cssText += `width:100%; height:100%; object-fit:contain; background:#fff;`;
+  els.under.appendChild(underImg);
+
+  flipInner.appendChild(els.under);
+  flipInner.appendChild(els.overlay);
+  flipInner.appendChild(els.dropShadow);
+
+  animateFlip(els, 'forward', () => {
     spread = nextSpread;
     displaySpread();
-    overlay.remove();
-    document.getElementById('shadowRight').style.opacity = '0';
+    els.overlay.remove();
+    els.under.remove();
+    els.dropShadow.remove();
     isAnimating = false;
-  }, 580);
+  });
 }
 
 function flipBack() {
@@ -582,74 +672,40 @@ function flipBack() {
   isAnimating = true;
 
   const prevSpread = spread - 1;
+  const curPages = spreadPages(spread);
   const prevPages = spreadPages(prevSpread);
 
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `
-    position:absolute; top:0; left:0; width:50%; height:100%;
-    transform-origin: right center;
-    transform-style: preserve-3d;
-    z-index: 30;
-    pointer-events: none;
-    transform: rotateY(180deg);
-  `;
+  const frontSrc = isMobile ? url(prevPages[0]) : url(prevPages[1] || prevPages[0]);
+  const backSrc = url(curPages[0]);
 
-  // Front face (previous right page)
-  const front = document.createElement('div');
-  front.style.cssText = `
-    position:absolute; top:0; left:0; width:100%; height:100%;
-    backface-visibility: hidden;
-    background: #fff;
-    overflow: hidden;
-    border-radius: 0 3px 3px 0;
-  `;
-  const frontImg = document.createElement('img');
-  frontImg.src = isMobile ? url(prevPages[0]) : url(prevPages[1] || prevPages[0]);
-  frontImg.style.cssText = `width:100%; height:100%; object-fit:contain; background:#fff;`;
-  if (!isMobile) frontImg.style.objectPosition = 'left center';
-  front.appendChild(frontImg);
+  const els = createFlipElements(frontSrc, backSrc, 'back');
 
-  // Back face (current left page)
-  const back = document.createElement('div');
-  back.style.cssText = `
-    position:absolute; top:0; left:0; width:100%; height:100%;
-    backface-visibility: hidden;
-    transform: rotateY(180deg);
-    background: #fff;
-    overflow: hidden;
-    border-radius: 3px 0 0 3px;
-  `;
-  const curPages = spreadPages(spread);
-  const backImg = document.createElement('img');
-  backImg.src = url(curPages[0]);
-  backImg.style.cssText = `width:100%; height:100%; object-fit:contain; background:#fff;`;
-  if (!isMobile) backImg.style.objectPosition = 'right center';
-  back.appendChild(backImg);
-
-  overlay.appendChild(front);
-  overlay.appendChild(back);
-
+  // Underneath: previous left page
+  const underImg = document.createElement('img');
   if (isMobile) {
-    overlay.style.width = '100%';
-    overlay.style.transformOrigin = 'right center';
+    underImg.src = url(prevPages[0]);
+  } else {
+    underImg.src = url(prevPages[0]);
+    underImg.style.objectPosition = 'right center';
   }
+  underImg.style.cssText += `width:100%; height:100%; object-fit:contain; background:#fff;`;
+  els.under.appendChild(underImg);
 
-  flipInner.appendChild(overlay);
-  document.getElementById('shadowLeft').style.opacity = '1';
+  // Start flipped
+  els.overlay.style.transform = 'rotateY(-180deg)';
 
-  requestAnimationFrame(() => {
-    overlay.style.transition = 'transform 0.55s cubic-bezier(0.4, 0.0, 0.2, 1)';
-    overlay.style.transform = 'rotateY(0deg)';
-    overlay.style.boxShadow = '4px 0 15px rgba(0,0,0,0.2)';
-  });
+  flipInner.appendChild(els.under);
+  flipInner.appendChild(els.overlay);
+  flipInner.appendChild(els.dropShadow);
 
-  setTimeout(() => {
+  animateFlip(els, 'back', () => {
     spread = prevSpread;
     displaySpread();
-    overlay.remove();
-    document.getElementById('shadowLeft').style.opacity = '0';
+    els.overlay.remove();
+    els.under.remove();
+    els.dropShadow.remove();
     isAnimating = false;
-  }, 580);
+  });
 }
 
 function goToSpread(s) {
