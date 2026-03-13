@@ -438,7 +438,7 @@ function currentLeftPage() {
 function sizeBook() {
   const cw = bookArea.clientWidth;
   const ch = bookArea.clientHeight;
-  const pad = isMobile ? 8 : 20;
+  const pad = isMobile ? 8 : 10;
   const aspect = 297 / 210; // A4
 
   isMobile = window.innerWidth <= 640;
@@ -458,11 +458,10 @@ function sizeBook() {
     document.getElementById('pageRight').style.left = '0';
     document.querySelector('.spine').style.display = 'none';
   } else {
-    // Double page spread
+    // Double page spread — fill as much space as possible
     let h = ch - pad * 2;
     let w = (h / aspect) * 2;
     if (w > cw - pad * 2) { w = cw - pad * 2; h = (w / 2) * aspect; }
-    if (w > 1100) { w = 1100; h = (w / 2) * aspect; }
     pageW = Math.floor(w);
     pageH = Math.floor(h);
     flipbook.style.width = pageW + 'px';
