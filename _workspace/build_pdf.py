@@ -149,7 +149,7 @@ def create_styles():
     )
     styles["code"] = ParagraphStyle(
         "CodeBlock",
-        fontName="Courier",
+        fontName="NotoSansKR",
         fontSize=8.5,
         leading=12,
         textColor=DARK,
@@ -161,7 +161,7 @@ def create_styles():
     )
     styles["inline_code"] = ParagraphStyle(
         "InlineCode",
-        fontName="Courier",
+        fontName="NotoSansKR",
         fontSize=9,
         textColor=HexColor("#C7254E"),
     )
@@ -313,7 +313,7 @@ class CodeBlock(Flowable):
 
         # Code text
         canvas.setFillColor(DARK)
-        canvas.setFont("Courier", 8)
+        canvas.setFont("NotoSansKR", 8)
         y = h - (14 if self.lang else 10)
         for line in self.lines:
             if y < 4:
@@ -549,7 +549,7 @@ class MarkdownToPDF:
         counter = [0]
         def replace_code(m):
             key = f"\x00CODE{counter[0]}\x00"
-            code_placeholders[key] = f'<font face="Courier" size="8" color="#C7254E">{m.group(1)}</font>'
+            code_placeholders[key] = f'<font face="NotoSansKR" size="8" color="#C7254E">{m.group(1)}</font>'
             counter[0] += 1
             return key
         text = re.sub(r"`([^`]+)`", replace_code, text)
