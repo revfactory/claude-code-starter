@@ -29,21 +29,22 @@ BOOK_DIR = "/Users/robin/Downloads/claude-code-starter/book"
 IMAGES_DIR = os.path.join(BOOK_DIR, "images")
 OUTPUT_PDF = os.path.join(BOOK_DIR, "Claude_Code_시작하기.pdf")
 
-FONT_PATH = "/Users/robin/Library/Fonts/NotoSansKR-VariableFont_wght.ttf"
+FONT_REGULAR = "/Users/robin/Library/Fonts/Pretendard-Regular.ttf"
+FONT_BOLD = "/Users/robin/Library/Fonts/Pretendard-Bold.ttf"
 
-# Colors
-PRIMARY = HexColor("#4A6CF7")      # Blue
-SECONDARY = HexColor("#6366F1")    # Indigo
-ACCENT = HexColor("#8B5CF6")       # Purple
-DARK = HexColor("#1E293B")         # Dark slate
-MEDIUM = HexColor("#475569")       # Slate
-LIGHT_BG = HexColor("#F8FAFC")     # Light background
-CODE_BG = HexColor("#F1F5F9")      # Code background
-TIP_BG = HexColor("#EFF6FF")       # Tip background
-WARN_BG = HexColor("#FFF7ED")      # Warning background
-BORDER = HexColor("#E2E8F0")       # Border
-TIP_BORDER = HexColor("#3B82F6")   # Tip border blue
-WARN_BORDER = HexColor("#F59E0B")  # Warning border amber
+# Colors — high readability palette
+PRIMARY = HexColor("#2563EB")      # Vivid blue (headings)
+SECONDARY = HexColor("#4338CA")    # Deep indigo (sub-headings)
+ACCENT = HexColor("#7C3AED")       # Purple (h4)
+DARK = HexColor("#111827")         # Near-black for body text (high contrast)
+MEDIUM = HexColor("#374151")       # Dark gray for secondary text
+LIGHT_BG = HexColor("#FFFFFF")     # Pure white page background
+CODE_BG = HexColor("#F3F4F6")      # Neutral gray for code
+TIP_BG = HexColor("#EFF6FF")       # Soft blue for tips
+WARN_BG = HexColor("#FFFBEB")      # Warm yellow for warnings
+BORDER = HexColor("#D1D5DB")       # Visible border
+TIP_BORDER = HexColor("#2563EB")   # Blue tip border
+WARN_BORDER = HexColor("#D97706")  # Amber warning border
 
 # Chapter files in order
 CHAPTER_FILES = [
@@ -70,12 +71,12 @@ CHAPTER_FILES = [
 
 # ─── Font Registration ───
 def register_fonts():
-    pdfmetrics.registerFont(TTFont("NotoSansKR", FONT_PATH))
-    pdfmetrics.registerFont(TTFont("NotoSansKR-Bold", FONT_PATH))
+    pdfmetrics.registerFont(TTFont("Pretendard", FONT_REGULAR))
+    pdfmetrics.registerFont(TTFont("Pretendard-Bold", FONT_BOLD))
     pdfmetrics.registerFontFamily(
-        "NotoSansKR",
-        normal="NotoSansKR",
-        bold="NotoSansKR-Bold",
+        "Pretendard",
+        normal="Pretendard",
+        bold="Pretendard-Bold",
     )
 
 # ─── Styles ───
@@ -84,7 +85,7 @@ def create_styles():
 
     styles["title"] = ParagraphStyle(
         "BookTitle",
-        fontName="NotoSansKR-Bold",
+        fontName="Pretendard-Bold",
         fontSize=32,
         leading=42,
         textColor=DARK,
@@ -93,7 +94,7 @@ def create_styles():
     )
     styles["subtitle"] = ParagraphStyle(
         "BookSubtitle",
-        fontName="NotoSansKR",
+        fontName="Pretendard",
         fontSize=16,
         leading=22,
         textColor=MEDIUM,
@@ -102,7 +103,7 @@ def create_styles():
     )
     styles["h1"] = ParagraphStyle(
         "Heading1",
-        fontName="NotoSansKR-Bold",
+        fontName="Pretendard-Bold",
         fontSize=22,
         leading=30,
         textColor=DARK,
@@ -112,7 +113,7 @@ def create_styles():
     )
     styles["h2"] = ParagraphStyle(
         "Heading2",
-        fontName="NotoSansKR-Bold",
+        fontName="Pretendard-Bold",
         fontSize=16,
         leading=22,
         textColor=PRIMARY,
@@ -121,7 +122,7 @@ def create_styles():
     )
     styles["h3"] = ParagraphStyle(
         "Heading3",
-        fontName="NotoSansKR-Bold",
+        fontName="Pretendard-Bold",
         fontSize=13,
         leading=18,
         textColor=SECONDARY,
@@ -130,7 +131,7 @@ def create_styles():
     )
     styles["h4"] = ParagraphStyle(
         "Heading4",
-        fontName="NotoSansKR-Bold",
+        fontName="Pretendard-Bold",
         fontSize=11,
         leading=15,
         textColor=ACCENT,
@@ -139,19 +140,19 @@ def create_styles():
     )
     styles["body"] = ParagraphStyle(
         "BodyText",
-        fontName="NotoSansKR",
-        fontSize=10,
-        leading=16,
+        fontName="Pretendard",
+        fontSize=10.5,
+        leading=18,
         textColor=DARK,
         spaceBefore=1 * mm,
-        spaceAfter=2 * mm,
+        spaceAfter=2.5 * mm,
         alignment=TA_JUSTIFY,
     )
     styles["code"] = ParagraphStyle(
         "CodeBlock",
-        fontName="NotoSansKR",
-        fontSize=8.5,
-        leading=12,
+        fontName="Pretendard",
+        fontSize=9,
+        leading=13,
         textColor=DARK,
         spaceBefore=2 * mm,
         spaceAfter=2 * mm,
@@ -161,15 +162,15 @@ def create_styles():
     )
     styles["inline_code"] = ParagraphStyle(
         "InlineCode",
-        fontName="NotoSansKR",
-        fontSize=9,
-        textColor=HexColor("#C7254E"),
+        fontName="Pretendard",
+        fontSize=9.5,
+        textColor=HexColor("#B91C1C"),
     )
     styles["tip"] = ParagraphStyle(
         "TipBlock",
-        fontName="NotoSansKR",
-        fontSize=9.5,
-        leading=14,
+        fontName="Pretendard",
+        fontSize=10,
+        leading=16,
         textColor=HexColor("#1E40AF"),
         spaceBefore=3 * mm,
         spaceAfter=3 * mm,
@@ -179,9 +180,9 @@ def create_styles():
     )
     styles["warning"] = ParagraphStyle(
         "WarningBlock",
-        fontName="NotoSansKR",
-        fontSize=9.5,
-        leading=14,
+        fontName="Pretendard",
+        fontSize=10,
+        leading=16,
         textColor=HexColor("#92400E"),
         spaceBefore=3 * mm,
         spaceAfter=3 * mm,
@@ -191,7 +192,7 @@ def create_styles():
     )
     styles["blockquote"] = ParagraphStyle(
         "Blockquote",
-        fontName="NotoSansKR",
+        fontName="Pretendard",
         fontSize=10,
         leading=15,
         textColor=MEDIUM,
@@ -202,7 +203,7 @@ def create_styles():
     )
     styles["table_header"] = ParagraphStyle(
         "TableHeader",
-        fontName="NotoSansKR-Bold",
+        fontName="Pretendard-Bold",
         fontSize=9,
         leading=12,
         textColor=white,
@@ -210,15 +211,15 @@ def create_styles():
     )
     styles["table_cell"] = ParagraphStyle(
         "TableCell",
-        fontName="NotoSansKR",
-        fontSize=8.5,
-        leading=12,
+        fontName="Pretendard",
+        fontSize=9,
+        leading=13,
         textColor=DARK,
         alignment=TA_LEFT,
     )
     styles["part_title"] = ParagraphStyle(
         "PartTitle",
-        fontName="NotoSansKR-Bold",
+        fontName="Pretendard-Bold",
         fontSize=26,
         leading=34,
         textColor=PRIMARY,
@@ -228,7 +229,7 @@ def create_styles():
     )
     styles["toc_entry"] = ParagraphStyle(
         "TOCEntry",
-        fontName="NotoSansKR",
+        fontName="Pretendard",
         fontSize=11,
         leading=18,
         textColor=DARK,
@@ -236,7 +237,7 @@ def create_styles():
     )
     styles["footer"] = ParagraphStyle(
         "Footer",
-        fontName="NotoSansKR",
+        fontName="Pretendard",
         fontSize=8,
         textColor=MEDIUM,
         alignment=TA_CENTER,
@@ -308,12 +309,12 @@ class CodeBlock(Flowable):
         # Language label
         if self.lang:
             canvas.setFillColor(PRIMARY)
-            canvas.setFont("NotoSansKR", 7)
+            canvas.setFont("Pretendard", 7)
             canvas.drawString(8, h - 10, self.lang)
 
         # Code text
         canvas.setFillColor(DARK)
-        canvas.setFont("NotoSansKR", 8)
+        canvas.setFont("Pretendard", 8.5)
         y = h - (14 if self.lang else 10)
         for line in self.lines:
             if y < 4:
@@ -549,7 +550,7 @@ class MarkdownToPDF:
         counter = [0]
         def replace_code(m):
             key = f"\x00CODE{counter[0]}\x00"
-            code_placeholders[key] = f'<font face="NotoSansKR" size="8" color="#C7254E">{m.group(1)}</font>'
+            code_placeholders[key] = f'<font face="Pretendard" size="9" color="#B91C1C">{m.group(1)}</font>'
             counter[0] += 1
             return key
         text = re.sub(r"`([^`]+)`", replace_code, text)
@@ -607,7 +608,7 @@ class MarkdownToPDF:
             if alt_text:
                 caption_style = ParagraphStyle(
                     "ImageCaption",
-                    fontName="NotoSansKR",
+                    fontName="Pretendard",
                     fontSize=8,
                     leading=12,
                     textColor=MEDIUM,
@@ -668,12 +669,12 @@ class MarkdownToPDF:
                 # Header
                 ("BACKGROUND", (0, 0), (-1, 0), PRIMARY),
                 ("TEXTCOLOR", (0, 0), (-1, 0), white),
-                ("FONTNAME", (0, 0), (-1, 0), "NotoSansKR-Bold"),
+                ("FONTNAME", (0, 0), (-1, 0), "Pretendard-Bold"),
                 ("FONTSIZE", (0, 0), (-1, 0), 9),
                 ("BOTTOMPADDING", (0, 0), (-1, 0), 6),
                 ("TOPPADDING", (0, 0), (-1, 0), 6),
                 # Body
-                ("FONTNAME", (0, 1), (-1, -1), "NotoSansKR"),
+                ("FONTNAME", (0, 1), (-1, -1), "Pretendard"),
                 ("FONTSIZE", (0, 1), (-1, -1), 8.5),
                 ("BOTTOMPADDING", (0, 1), (-1, -1), 5),
                 ("TOPPADDING", (0, 1), (-1, -1), 5),
@@ -707,7 +708,7 @@ def add_page_number(canvas, doc):
     canvas.line(20 * mm, 15 * mm, 190 * mm, 15 * mm)
 
     # Page number
-    canvas.setFont("NotoSansKR", 8)
+    canvas.setFont("Pretendard", 8)
     canvas.setFillColor(MEDIUM)
     canvas.drawCentredString(105 * mm, 10 * mm, f"— {page_num} —")
 
@@ -715,7 +716,7 @@ def add_page_number(canvas, doc):
     if page_num > 1:
         canvas.setStrokeColor(BORDER)
         canvas.line(20 * mm, 282 * mm, 190 * mm, 282 * mm)
-        canvas.setFont("NotoSansKR", 7)
+        canvas.setFont("Pretendard", 7)
         canvas.setFillColor(MEDIUM)
         canvas.drawString(20 * mm, 284 * mm, "Claude Code 시작하기")
 
@@ -744,7 +745,7 @@ def create_cover_page(story, styles):
     # Description
     desc_style = ParagraphStyle(
         "CoverDesc",
-        fontName="NotoSansKR",
+        fontName="Pretendard",
         fontSize=11,
         leading=18,
         textColor=MEDIUM,
@@ -769,7 +770,7 @@ def build_pdf():
 
     # Register fonts
     register_fonts()
-    print("  ✓ 한글 폰트 등록 완료 (NotoSansKR)")
+    print("  ✓ Pretendard 폰트 등록 완료")
 
     # Create styles
     styles = create_styles()
