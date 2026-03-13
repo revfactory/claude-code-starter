@@ -593,10 +593,7 @@ function createFlipElements(frontSrc, backSrc, direction) {
   return { overlay, front, back, frontShade, backShine, under, dropShadow };
 }
 
-function animateFlip(els, direction, onComplete) {
-  const isForward = direction === 'forward';
-  const startAngle = isForward ? 0 : -180;
-  const endAngle = isForward ? -180 : 0;
+function animateFlip(startAngle, endAngle, els, onComplete) {
   const startTime = performance.now();
 
   function frame(now) {
@@ -609,16 +606,17 @@ function animateFlip(els, direction, onComplete) {
     els.overlay.style.transform = `rotateY(${angle}deg)`;
 
     // Dynamic shadow intensity — peaks at 90 degrees
-    const openness = Math.abs(Math.abs(angle) - 90) / 90; // 0 at 90°, 1 at 0°/180°
-    const shadowIntensity = (1 - openness) * 0.25;
-    els.dropShadow.style.opacity = shadowIntensity;
+    const absAngle = Math.abs(angle % 360);
+    const distFrom90 = Math.abs(absAngle > 180 ? absAngle - 270 : absAngle - 90);
+    const shadowIntensity = (1 - distFrom90 / 90) * 0.25;
+    els.dropShadow.style.opacity = Math.max(0, shadowIntensity);
 
     // Front face darkens as it rotates away
-    const frontDark = isForward ? t * 0.08 : (1-t) * 0.08;
+    const frontDark = t * 0.08;
     els.frontShade.style.background = `rgba(0,0,0,${frontDark})`;
 
     // Back shine peaks mid-flip
-    els.backShine.style.opacity = shadowIntensity * 0.6;
+    els.backShine.style.opacity = Math.max(0, shadowIntensity) * 0.6;
 
     if (rawT < 1) {
       requestAnimationFrame(frame);
@@ -657,7 +655,7 @@ function flipForward() {
   flipInner.appendChild(els.overlay);
   flipInner.appendChild(els.dropShadow);
 
-  animateFlip(els, 'forward', () => {
+  animateFlip(0, -180, els, () => {
     spread = nextSpread;
     displaySpread();
     els.overlay.remove();
@@ -674,36 +672,102 @@ function flipBack() {
   const prevSpread = spread - 1;
   const curPages = spreadPages(spread);
   const prevPages = spreadPages(prevSpread);
+  const w = isMobile ? '100%' : '50%';
 
-  const frontSrc = isMobile ? url(prevPages[0]) : url(prevPages[1] || prevPages[0]);
-  const backSrc = url(curPages[0]);
+  // The LEFT page lifts and flips RIGHTWARD around the spine (right edge).
+  // front face = current left page (visible at start, angle 0)
+  // back face = previous right page (visible at end, angle 180, lands on right side)
+  const frontSrc = url(curPages[0]);
+  const backSrc = isMobile ? url(prevPages[0]) : url(prevPages[1] || prevPages[0]);
 
-  const els = createFlipElements(frontSrc, backSrc, 'back');
+  // Overlay: positioned on the left, rotates around right edge
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position:absolute; top:0; left:0; width:${w}; height:100%;
+    transform-origin: right center;
+    transform-style: preserve-3d;
+    z-index: 40;
+    pointer-events: none;
+  `;
 
-  // Underneath: previous left page
+  // Front face (current left page — visible at start)
+  const front = document.createElement('div');
+  front.style.cssText = `
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    backface-visibility: hidden;
+    background: #fff; overflow: hidden;
+  `;
+  const fImg = document.createElement('img');
+  fImg.src = frontSrc;
+  fImg.style.cssText = `width:100%; height:100%; object-fit:contain; background:#fff;`;
+  if (!isMobile) fImg.style.objectPosition = 'right center';
+  front.appendChild(fImg);
+
+  const frontShade = document.createElement('div');
+  frontShade.style.cssText = `
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0); pointer-events:none;
+  `;
+  front.appendChild(frontShade);
+
+  // Back face (previous right page — visible at end)
+  const back = document.createElement('div');
+  back.style.cssText = `
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    backface-visibility: hidden;
+    transform: rotateY(180deg);
+    background: #fff; overflow: hidden;
+  `;
+  const bImg = document.createElement('img');
+  bImg.src = backSrc;
+  bImg.style.cssText = `width:100%; height:100%; object-fit:contain; background:#fff;`;
+  if (!isMobile) bImg.style.objectPosition = 'left center';
+  back.appendChild(bImg);
+
+  const backShine = document.createElement('div');
+  backShine.style.cssText = `
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    background: linear-gradient(to left, rgba(255,255,255,0.15), transparent 40%);
+    opacity: 0; pointer-events:none;
+  `;
+  back.appendChild(backShine);
+
+  overlay.appendChild(front);
+  overlay.appendChild(back);
+
+  // Underneath: previous left page (revealed on the left as the page flips away)
+  const under = document.createElement('div');
+  under.style.cssText = `
+    position:absolute; top:0; left:0; width:${w}; height:100%;
+    z-index: 35; pointer-events: none; overflow: hidden; background: #fff;
+  `;
   const underImg = document.createElement('img');
-  if (isMobile) {
-    underImg.src = url(prevPages[0]);
-  } else {
-    underImg.src = url(prevPages[0]);
-    underImg.style.objectPosition = 'right center';
-  }
-  underImg.style.cssText += `width:100%; height:100%; object-fit:contain; background:#fff;`;
-  els.under.appendChild(underImg);
+  underImg.src = url(prevPages[0]);
+  underImg.style.cssText = `width:100%; height:100%; object-fit:contain; background:#fff;`;
+  if (!isMobile) underImg.style.objectPosition = 'right center';
+  under.appendChild(underImg);
 
-  // Start flipped
-  els.overlay.style.transform = 'rotateY(-180deg)';
+  // Drop shadow
+  const dropShadow = document.createElement('div');
+  dropShadow.style.cssText = `
+    position:absolute; top:0; height:100%; width:30px; left:0;
+    background: linear-gradient(to right, rgba(0,0,0,0.15), transparent);
+    opacity: 0; z-index: 42; pointer-events:none;
+  `;
 
-  flipInner.appendChild(els.under);
-  flipInner.appendChild(els.overlay);
-  flipInner.appendChild(els.dropShadow);
+  const els = { overlay, front, back, frontShade, backShine, under, dropShadow };
 
-  animateFlip(els, 'back', () => {
+  flipInner.appendChild(under);
+  flipInner.appendChild(overlay);
+  flipInner.appendChild(dropShadow);
+
+  // Animate from 0 → 180 (left page flips rightward)
+  animateFlip(0, 180, els, () => {
     spread = prevSpread;
     displaySpread();
-    els.overlay.remove();
-    els.under.remove();
-    els.dropShadow.remove();
+    overlay.remove();
+    under.remove();
+    dropShadow.remove();
     isAnimating = false;
   });
 }
