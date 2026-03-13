@@ -85,11 +85,11 @@ book/
 `book/Claude_Code_시작하기.pdf` — 전체 134페이지, 한국어 폰트(Noto Sans KR) 적용.
 
 ### 웹 뷰어
-`book/web/index.html` — 페이지 넘기기 효과가 있는 브라우저 기반 뷰어.
+`docs/index.html` — 페이지 넘기기 효과가 있는 브라우저 기반 뷰어.
 
 ```bash
 # 로컬에서 웹 뷰어 실행
-cd book/web
+cd docs
 python -m http.server 8080
 # 브라우저에서 http://localhost:8080 접속
 ```
